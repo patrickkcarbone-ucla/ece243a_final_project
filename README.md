@@ -4,6 +4,8 @@
 
 Brain-to-text decoding from intracortical neural signals using Transformer architectures with multi-level coarticulation modeling.
 
+We trained our models in Colab with: `notebooks/colab_training_notebook.ipynb`
+
 ## Quick Start
 
 ### Setup

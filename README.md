@@ -18,7 +18,7 @@ uv pip install -e .
 # Unzip and rename to 'data/'
 
 # Build diphone vocab
-python scripts/build_diphone_vocab.py --dataset dual_region_data/ptDecoder_ctc_dual_region
+python scripts/build_diphone_vocab.py --dataset data/ptDecoder_ctc
 
 # Format datasets (run the notebook)
 notebooks/formatCompetitionLogdDualData.ipynb

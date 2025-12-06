@@ -1,0 +1,38 @@
+# @package _global_
+# CR-CTC sweep control: Base model WITHOUT CR-CTC (should match diphone_intermediate ~25%)
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: transformer/crctc_sweep/base_ctrl
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule (100 epochs quick screen)
+nEpochs: 100
+lrDecayEpoch: 60
+lrWarmupEpochs: 2
+
+optimizer:
+  lr: 0.001
+
+batchSize: 24
+maxGradNorm: 1.0
+useMixedPrecision: true
+
+# Enable diphone + intermediate (our best baseline)
+model:
+  use_diphone: true
+  use_intermediate_ctc: true
+
+diphone_max_alpha: 0.6
+diphone_ramp_epochs: 25
+intermediate_ctc_weight: 0.3
+
+# NO CR-CTC
+useCRCTC: false
+

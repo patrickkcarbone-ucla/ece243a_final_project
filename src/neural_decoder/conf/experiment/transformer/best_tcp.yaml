@@ -1,0 +1,189 @@
+# @package _global_
+# TCP Transformer XXXL - Best Parameters
+
+defaults:
+  - override /model: transformer/best_tcp
+  - override /trainer: tcp_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: transformer/best_tcp
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+nEpochs: 125
+batchSize: 64
+maxGradNorm: 1.0
+useMixedPrecision: false
+
+model:
+  use_gating: true
+  use_highway: true
+
+alpha_mono: 0.3
+alpha_di: 0.4
+alpha_context: 0.3
+lambda_gate: 0.01
+
+diphone_vocab_path: data/diphone_vocab.pkl
+
+lr_schedule:
+  - name: warmup
+    start_epoch: 0
+    end_epoch: 4
+    function: linear
+    start_lr: 0.00006
+    end_lr: 0.0003
+
+  - name: decay1
+    start_epoch: 4
+    end_epoch: 25
+    function: cosine
+    start_lr: 0.0003
+    end_lr: 0.0002
+
+  - name: decay2
+    start_epoch: 25
+    end_epoch: 75
+    function: cosine
+    start_lr: 0.0002
+    end_lr: 0.00002
+
+  - name: decay3
+    start_epoch: 75
+    end_epoch: 125
+    function: cosine
+    start_lr: 0.00002
+    end_lr: 0.000002
+
+loss_schedule:
+  # ==============================================================
+  # PHASE 1 (Epochs 0-25): Diphone Dominance
+  # - Diphone loss is primary driver (matching DCoND philosophy)
+  # - Monophone reduced to avoid competition
+  # - Context heavily suppressed
+  # - Fused output secondary to let structure form
+  # ==============================================================
+  # PHASE 2 (Epochs 25-55): Gradual Handoff
+  # - Diphone decreases as structure solidifies
+  # - Context and fused ramp up
+  # - Monophone restored to standard level
+  # ==============================================================
+  # PHASE 3 (Epochs 55-125): Fusion Focus
+  # - Fused output dominates
+  # - Auxiliary losses provide regularization
+  # ==============================================================
+
+  alpha_di:
+    # Match DCoND: start near 1.0, diphone must dominate early
+    - name: dominance
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 0.9
+    # Begin gradual handoff (DCoND reduces ~0.1 every 10 epochs)
+    - name: handoff_1
+      start_epoch: 10
+      end_epoch: 25
+      function: linear
+      start_value: 0.9
+      end_value: 0.7
+    - name: handoff_2
+      start_epoch: 25
+      end_epoch: 50
+      function: linear
+      start_value: 0.7
+      end_value: 0.5
+    # Settle toward balanced level
+    - name: balanced
+      start_epoch: 50
+      end_epoch: 85
+      function: linear
+      start_value: 0.5
+      end_value: 0.4
+    # Final phase: regularization role
+    - name: refinement
+      start_epoch: 85
+      end_epoch: 125
+      function: linear
+      start_value: 0.4
+      end_value: 0.25
+
+  alpha_mono:
+    # Reduced during diphone dominance phase
+    - name: reduced
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.2
+    # Restore to standard level
+    - name: standard
+      start_epoch: 25
+      end_epoch: 125
+      function: constant
+      value: 0.3
+
+  alpha_context:
+    # Heavily suppressed during diphone dominance
+    - name: suppressed
+      start_epoch: 0
+      end_epoch: 20
+      function: constant
+      value: 0.1
+    # Gradual activation as diphone structure is established
+    - name: ramp
+      start_epoch: 20
+      end_epoch: 55
+      function: linear
+      start_value: 0.1
+      end_value: 0.35
+    # Mature level
+    - name: mature
+      start_epoch: 55
+      end_epoch: 125
+      function: constant
+      value: 0.35
+
+  alpha_fused:
+    # Secondary during diphone dominance
+    - name: auxiliary_focus
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.5
+    # Ramp to primary role
+    - name: transition
+      start_epoch: 25
+      end_epoch: 50
+      function: linear
+      start_value: 0.5
+      end_value: 1.0
+    # Full weight for primary objective
+    - name: primary
+      start_epoch: 50
+      end_epoch: 125
+      function: constant
+      value: 1.0
+
+  lambda_gate:
+    # High entropy throughout diphone dominance AND handoff
+    - name: exploration
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.03
+    # Slower decay
+    - name: transition
+      start_epoch: 25
+      end_epoch: 60
+      function: linear
+      start_value: 0.03
+      end_value: 0.01
+    # Never go too low - maintain some regularization
+    - name: specialization
+      start_epoch: 60
+      end_epoch: 125
+      function: linear
+      start_value: 0.01
+      end_value: 0.003

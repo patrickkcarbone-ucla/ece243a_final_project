@@ -1,0 +1,5 @@
+# Dual-Stream TCP + GMVAE CTC Trainer
+# Combined CTC + GMVAE auxiliary losses
+_target_: neural_decoder.trainers.dual_stream_trainer.DualStreamTCPGMVAETrainer
+_recursive_: False
+

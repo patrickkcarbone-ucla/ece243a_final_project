@@ -1,0 +1,19 @@
+# Independent mode: each aug applied with P=1/3, allows combos + none, at ~1.0 SD level
+# Expected distribution: ~30% none, ~44% one aug, ~22% two augs, ~4% all three
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+# Mixup at 1.0 SD level
+mixup_ratio: 0.7
+# Adaptive noise at 1.0 SD level
+adaptive_noise_base: 0.8
+adaptive_noise_scale: 0.4
+# White noise at 1.0 SD
+white_noise_sd: 1.0
+# Standard offset
+constant_offset_sd: 0.2
+corr_dropout_prob: 0.0
+# Independent stochastic mode with P=1/3 each
+stochastic: independent
+mixup_prob: 0.333
+adaptive_prob: 0.333
+white_prob: 0.333
+

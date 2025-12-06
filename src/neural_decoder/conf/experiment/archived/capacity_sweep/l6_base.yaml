@@ -1,0 +1,14 @@
+# @package _global_
+# 6 layers + baseline augmentation (0.8 SD)
+defaults:
+  - override /model: gru/dual_region_6v_l6
+  - override /augmentations: dual_region_baseline
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+useDualRegion: true
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.01
+name: capacity_sweep/l6_base
+

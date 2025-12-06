@@ -1,0 +1,86 @@
+# @package _global_
+# Quick screen: FULL Feghhi et al. (2025) Time-Masked Transformer
+#
+# Complete implementation of Feghhi 2025 features:
+#   1. Time-Masked Transformer architecture (base model)
+#   2. Feghhi diphone schedule (start 100% diphone, ramp up phoneme)
+#   3. Intermediate CTC loss from layer 3 (λ=0.3)
+#   4. LR warmup (5 epochs)
+#   5. FP16 mixed precision
+#   6. CR-CTC consistency regularization (β=0.2, ramped)
+#
+# Diphone schedule (100 epochs):
+#   Epochs 0-3: 100% diphone
+#   Epochs 4-7: 10% phoneme, 90% diphone
+#   ... until 60% phoneme, 40% diphone
+#
+# LR schedule:
+#   Epochs 0-4: warmup 0 → 0.001
+#   Epochs 5-49: 0.001
+#   Epochs 50-79: 0.0001
+#   Epochs 80-99: 0.00001
+
+defaults:
+  - override /model: transformer/full
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/feghhi_full
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule
+nEpochs: 100
+lrWarmupEpochs: 5
+
+# Refined LR decay schedule
+lrDecayEpoch: 50       # First decay
+lrDecayFactor: 0.1     # 0.001 → 0.0001
+lrDecayEpoch2: 80      # Second decay
+lrDecayFactor2: 0.1    # 0.0001 → 0.00001
+
+# LR
+optimizer:
+  lr: 0.001
+
+# Smaller batch for CR-CTC (2x forward passes)
+batchSize: 24
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP16 for speed
+useMixedPrecision: true
+
+# Model already has diphone + intermediate CTC enabled via transformer/full
+# Override n_diphones just to be explicit
+model:
+  use_diphone: true
+  n_diphones: 1600
+  use_intermediate_ctc: true
+  intermediate_layer: 2    # Layer 3 of 5 (0-indexed)
+
+# Feghhi diphone schedule (scaled for 100 epochs)
+# Original: 10 warmup + 6*10 ramp = 70 epochs in 250 epoch run
+# Scaled: 4 warmup + 6*4 ramp = 28 epochs in 100 epoch run
+diphone_vocab_path: data/diphone_vocab.pkl
+diphone_feghhi_schedule: true   # USE FEGHHI SCHEDULE
+diphone_warmup_epochs: 4        # First 4 epochs: 100% diphone
+diphone_ramp_epochs: 4          # Increase phoneme by 0.1 every 4 epochs
+diphone_max_alpha: 0.6          # Final: 60% phoneme, 40% diphone
+
+# Intermediate CTC weight
+intermediate_ctc_weight: 0.3
+
+# CR-CTC consistency regularization (ramped)
+useCRCTC: true
+crctcBeta: 0.2           # Max β
+crctcStartEpoch: 20      # Delay consistency until model has learned basics
+crctcRampEpochs: 30      # Linearly ramp β from 0 → 0.2 over epochs 20-50
+crctcGradientAccum: true # Memory efficient
+
+

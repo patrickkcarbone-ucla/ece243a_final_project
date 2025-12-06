@@ -1,0 +1,33 @@
+# @package _global_
+# Quick screen: Base Transformer (100 epochs, FP16)
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/base
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Compressed schedule (100 epochs instead of 250)
+nEpochs: 100
+lrDecayEpoch: 60
+lrWarmupEpochs: 5
+
+# Standard LR (0.002 caused divergence)
+optimizer:
+  lr: 0.001
+
+# Batch size
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP16 for speed
+useMixedPrecision: true
+

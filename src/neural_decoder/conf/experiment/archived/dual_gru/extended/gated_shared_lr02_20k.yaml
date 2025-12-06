@@ -1,0 +1,11 @@
+# @package _global_
+# Extended training run with 20K batches
+defaults:
+  - override /model: dual_stream/gated_shared
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+nBatch: 20000
+lrStart: 0.02
+lrEnd: 0.02
+name: dual_gru/extended/gated_shared_lr02_20k

@@ -1,0 +1,46 @@
+# TCP Transformer with Frozen GMVAE Features
+# Uses pre-trained GMVAE as frozen feature extractor
+# Based on TCP XXXL architecture
+
+_target_: neural_decoder.models.tcp_with_gmvae_features.TCPWithGMVAEFeatures
+name: tcp_gmvae/with_features
+
+# Input configuration
+neural_dim: 256              # 6v channels
+
+# TCP Transformer architecture (from tcp_xxxl)
+hidden_dim: 896              # Transformer hidden dimension
+num_layers: 10               # Number of Transformer blocks
+num_heads: 8                 # 896/8 = 112 per head
+ffn_dim: 3584                # 896 * 4
+n_classes: 40                # Phoneme classes
+
+# Patching
+patch_len: 5                 # 100ms patches
+patch_stride: 5              # Non-overlapping
+
+# Dropout/regularization
+dropout: 0.4
+attn_dropout: 0.1
+input_dropout: 0.2
+
+# Attention
+max_rel_pos: 64
+
+# Time masking (augmentation)
+num_masks: 25
+max_mask_fraction: 0.08
+
+# TCP configuration
+use_tcp: true
+mono_layer: 4                # Level 1 tap point
+diphone_layer: 7             # Level 2 tap point
+use_gating: true             # Learned gating
+use_highway: true            # Gradient highway
+n_diphones: 1600
+
+# GMVAE configuration (must match trained model!)
+gmvae_weights_path: null     # REQUIRED: Set via experiment config or command line
+gmvae_n_clusters: 40
+gmvae_hidden_dim: 512
+gmvae_z_dim: 64

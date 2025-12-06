@@ -1,0 +1,14 @@
+# Dual-stream GRU with gated fusion, shared day layers, 50% dropout
+_target_: neural_decoder.models.dual_gru.DualStreamGRUDecoder
+name: dual_stream/gated_shared_dropout05
+neural_dim: 512
+n_classes: 40
+hidden_dim: 1024
+layer_dim: 5
+dropout: 0.5
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+fusion_strategy: gated
+day_layer_mode: shared
+

@@ -1,0 +1,46 @@
+# @package _global_
+# Quick screen: Larger TCP Transformer with fixed weights (100 epochs, FP32)
+# ~50% more parameters than standard TCP
+defaults:
+  - override /model: transformer/tcp_larger
+  - override /trainer: tcp_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/tcp/quick_larger/base
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Compressed schedule (100 epochs instead of 250)
+nEpochs: 100
+lrDecayEpoch: 60
+lrDecayFactor: 0.1
+lrWarmupEpochs: 5
+
+# LR
+optimizer:
+  lr: 0.001
+
+# Batch size
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP32 for stability
+useMixedPrecision: false
+
+# TCP with fixed weights (no gating)
+model:
+  use_gating: false
+alpha_mono: 0.3
+alpha_di: 0.4
+alpha_context: 0.3
+lambda_gate: 0.0
+
+# Diphone vocab
+diphone_vocab_path: data/diphone_vocab.pkl
+

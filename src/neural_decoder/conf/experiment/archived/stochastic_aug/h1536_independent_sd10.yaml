@@ -1,0 +1,14 @@
+# @package _global_
+# Independent mode: each aug with P=1/3, allows combos + none, at 1.0 SD level
+defaults:
+  - override /model: gru/dual_region_6v_h1536
+  - override /augmentations: independent_sd10
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+useDualRegion: true
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.01
+name: stochastic_aug/h1536_independent_sd10
+

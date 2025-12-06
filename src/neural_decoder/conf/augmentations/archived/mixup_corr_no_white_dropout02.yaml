@@ -1,0 +1,11 @@
+# Best combo, no white noise, for use with lower model dropout
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+mixup_ratio: 0.2
+adaptive_noise_base: 0.0
+adaptive_noise_scale: 0.0
+corr_dropout_prob: 0.3
+corr_threshold: 0.3
+corr_file: ${hydra:runtime.cwd}/data/6v_44_correlations.npy
+white_noise_sd: 0.0
+constant_offset_sd: 0.2
+

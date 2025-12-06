@@ -1,0 +1,25 @@
+# @package _global_
+# Quick test config for TCP Transformer (2 epochs only)
+defaults:
+  - override /model: transformer/tcp
+  - override /trainer: tcp_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: transformer/tcp/quick/test_2epochs
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+nEpochs: 2
+lrDecayEpoch: 1
+lrDecayFactor: 0.1
+batchSize: 32
+maxGradNorm: 1.0
+useMixedPrecision: true
+
+# TCP loss weights (fixed, no gating for simplicity)
+model:
+  use_gating: false
+alpha_mono: 0.3
+alpha_di: 0.4
+alpha_context: 0.3
+lambda_gate: 0.0

@@ -1,0 +1,15 @@
+# Dual-stream GRU with concatenation fusion and shared day layers
+# NOTE: Underperforms single-stream 6v-only baseline
+_target_: neural_decoder.models.dual_gru.DualStreamGRUDecoder
+name: dual_stream/concat_shared
+neural_dim: 512
+n_classes: 40
+hidden_dim: 1024
+layer_dim: 5
+dropout: 0.4
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+fusion_strategy: concat
+day_layer_mode: shared
+

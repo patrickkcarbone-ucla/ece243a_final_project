@@ -1,0 +1,8 @@
+# CrossAreaMixup as REPLACEMENT for white noise (not addition)
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+mixup_ratio: 0.2
+adaptive_noise_base: 0.0
+adaptive_noise_scale: 0.0
+corr_dropout_prob: 0.0
+white_noise_sd: 0.0 # Disabled - mixup is the only noise source
+constant_offset_sd: 0.2

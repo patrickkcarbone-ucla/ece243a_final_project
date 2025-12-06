@@ -1,0 +1,3 @@
+# Trainer for Standalone GMVAE
+_target_: neural_decoder.trainers.gmvae_standalone_trainer.GMVAEStandaloneTrainer
+_recursive_: False

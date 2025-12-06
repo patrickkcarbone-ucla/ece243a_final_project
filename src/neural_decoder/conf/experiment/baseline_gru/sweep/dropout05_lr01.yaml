@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - override /model: gru/dropout05
+  - override /optimizer: adam_lr01
+
+nBatch: 10000
+lrStart: 0.01
+lrEnd: 0.01
+name: baseline_gru/sweep/dropout05_lr01

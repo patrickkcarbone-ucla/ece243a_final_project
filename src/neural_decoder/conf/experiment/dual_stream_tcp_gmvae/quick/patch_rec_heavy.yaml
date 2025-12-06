@@ -1,0 +1,218 @@
+# @package _global_
+# Quick 50-epoch test: Heavy raw patch reconstruction
+# Tests if cross-modal (z -> raw patches) learning helps
+
+defaults:
+  - override /model: dual_stream_tcp_gmvae/xxxl_tcp
+  - override /trainer: dual_stream_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw_small_wd
+
+name: dual_stream_tcp_gmvae/quick/patch_rec_heavy
+
+saveModelWeights: false
+
+# ==============================================================================
+# Data
+# ==============================================================================
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+diphone_vocab_path: data/diphone_vocab.pkl
+
+# ==============================================================================
+# Training Parameters (50 epochs)
+# ==============================================================================
+nEpochs: 50
+batchSize: 64
+maxGradNorm: 1.0
+useMixedPrecision: false
+
+# ==============================================================================
+# Model Overrides
+# ==============================================================================
+model:
+  use_tcp: true
+  use_gating: true
+  use_highway: true
+  gmvae_tap_layer: 3
+  detach_gmvae_input: false
+
+gmvae_rec_type: mse
+
+# ==============================================================================
+# LR Schedule (compressed to 50 epochs)
+# ==============================================================================
+lr_schedule:
+  - name: warmup
+    start_epoch: 0
+    end_epoch: 2
+    function: linear
+    start_lr: 0.00006
+    end_lr: 0.0003
+
+  - name: decay1
+    start_epoch: 2
+    end_epoch: 15
+    function: cosine
+    start_lr: 0.0003
+    end_lr: 0.0001
+
+  - name: decay2
+    start_epoch: 15
+    end_epoch: 50
+    function: cosine
+    start_lr: 0.0001
+    end_lr: 0.00001
+
+# ==============================================================================
+# TCP Loss Schedule (compressed)
+# ==============================================================================
+loss_schedule:
+  alpha_di:
+    - name: dominance
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 0.8
+    - name: handoff
+      start_epoch: 10
+      end_epoch: 30
+      function: linear
+      start_value: 0.8
+      end_value: 0.4
+    - name: balanced
+      start_epoch: 30
+      end_epoch: 50
+      function: constant
+      value: 0.3
+
+  alpha_mono:
+    - name: constant
+      start_epoch: 0
+      end_epoch: 50
+      function: constant
+      value: 0.3
+
+  alpha_context:
+    - name: ramp
+      start_epoch: 0
+      end_epoch: 25
+      function: linear
+      start_value: 0.1
+      end_value: 0.3
+    - name: stable
+      start_epoch: 25
+      end_epoch: 50
+      function: constant
+      value: 0.3
+
+  alpha_fused:
+    - name: ramp
+      start_epoch: 0
+      end_epoch: 20
+      function: linear
+      start_value: 0.5
+      end_value: 1.0
+    - name: primary
+      start_epoch: 20
+      end_epoch: 50
+      function: constant
+      value: 1.0
+
+  lambda_gate:
+    - name: constant
+      start_epoch: 0
+      end_epoch: 50
+      function: constant
+      value: 0.02
+
+  # ===========================================================================
+  # GMVAE Loss Schedules - HEAVY PATCH RECONSTRUCTION
+  # ===========================================================================
+  alpha_gmvae_rec_tcp:
+    - name: constant
+      start_epoch: 0
+      end_epoch: 50
+      function: constant
+      value: 0.05  # Lower
+
+  alpha_gmvae_rec_patch:
+    - name: heavy
+      start_epoch: 0
+      end_epoch: 50
+      function: constant
+      value: 0.15  # Heavy cross-modal reconstruction
+
+  alpha_gmvae_kl:
+    - name: warmup
+      start_epoch: 0
+      end_epoch: 15
+      function: constant
+      value: 1.0
+    - name: ramp
+      start_epoch: 15
+      end_epoch: 35
+      function: linear
+      start_value: 1.0
+      end_value: 5.0
+    - name: stable
+      start_epoch: 35
+      end_epoch: 50
+      function: constant
+      value: 5.0
+
+  alpha_gmvae_cat:
+    - name: prevent_collapse
+      start_epoch: 0
+      end_epoch: 30
+      function: constant
+      value: 30.0
+    - name: relax
+      start_epoch: 30
+      end_epoch: 50
+      function: linear
+      start_value: 30.0
+      end_value: 15.0
+
+  alpha_gmvae_sup:
+    - name: strong
+      start_epoch: 0
+      end_epoch: 30
+      function: constant
+      value: 20.0
+    - name: relax
+      start_epoch: 30
+      end_epoch: 50
+      function: constant
+      value: 10.0
+
+  lambda_fusion_gate:
+    - name: balance
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.05
+    - name: relax
+      start_epoch: 25
+      end_epoch: 50
+      function: constant
+      value: 0.02
+
+  gmvae_temp:
+    - name: warm
+      start_epoch: 0
+      end_epoch: 5
+      function: constant
+      value: 1.0
+    - name: anneal
+      start_epoch: 5
+      end_epoch: 25
+      function: linear
+      start_value: 1.0
+      end_value: 0.5
+    - name: cold
+      start_epoch: 25
+      end_epoch: 50
+      function: constant
+      value: 0.5
+

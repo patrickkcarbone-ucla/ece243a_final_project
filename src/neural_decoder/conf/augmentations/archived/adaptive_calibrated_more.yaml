@@ -1,0 +1,10 @@
+# Adaptive noise calibrated to MORE than baseline (avg ~1.0 SD)
+# Range [0.8, 1.2], avg ~1.0
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+mixup_ratio: 0.0
+adaptive_noise_base: 0.8
+adaptive_noise_scale: 0.4
+corr_dropout_prob: 0.0
+white_noise_sd: 0.0
+constant_offset_sd: 0.2
+

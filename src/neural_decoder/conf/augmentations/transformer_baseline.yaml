@@ -1,0 +1,9 @@
+# Transformer augmentation pipeline (Feghhi et al. 2025)
+# Uses lower noise than GRU (time-masking in model provides main regularization)
+_target_: neural_decoder.augmentations.TransformerAugmentationPipeline
+white_noise_sd: 0.2         # Lower than GRU's 0.8
+baseline_shift_sd: 0.05     # Per-electrode DC offset
+smooth_kernel_size: 20      # Causal Gaussian smoothing kernel
+smooth_sigma: 2.0           # Causal Gaussian smoothing sigma
+neural_dim: 256             # Number of neural channels
+

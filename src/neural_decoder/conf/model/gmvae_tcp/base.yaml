@@ -1,0 +1,56 @@
+# Pre-Patch GMVAE TCP Transformer Model Configuration
+# GMVAE as FEATURE EXTRACTOR - discovers temporal structure in neural data
+# Cluster probs concatenated with neural input → TCP learns to use them
+# No phoneme supervision - let GMVAE find whatever patterns exist
+_target_: neural_decoder.models.gmvae_tcp_transformer.GMVAETCPTransformer
+name: gmvae_tcp
+
+# ==============================================================================
+# Common Parameters
+# ==============================================================================
+neural_dim: 256  # Only 6v data (256 ch), a44 ignored by augmenter
+n_classes: 40
+nDays: 24
+device: cuda
+
+# ==============================================================================
+# Transformer Architecture (from tcp_xxxl best)
+# ==============================================================================
+hidden_dim: 896
+num_layers: 10
+num_heads: 8
+ffn_dim: 3584
+patch_len: 5
+patch_stride: 5
+dropout: 0.35
+attn_dropout: 0.1
+input_dropout: 0.2
+max_rel_pos: 64
+
+# Time masking (from tcp_xxxl best)
+num_masks: 20
+max_mask_fraction: 0.075
+
+# ==============================================================================
+# TCP Parameters
+# ==============================================================================
+use_tcp: true
+mono_layer: 3
+diphone_layer: 6
+use_gating: true
+use_highway: true
+fixed_gate_weights: [0.33, 0.33, 0.34]
+n_diphones: 1600
+
+# ==============================================================================
+# Frame GMVAE Parameters - Feature Extractor Mode
+# Smaller network since operating on 256-dim frames (not 2560-dim patches)
+# ==============================================================================
+gmvae_hidden_dim: 256
+gmvae_z_dim: 64
+n_clusters: 40
+gmvae_init_temp: 1.5   # Start warmer for exploration
+gmvae_min_temp: 0.7    # Don't go too cold
+gmvae_decay_temp_rate: 0.02  # Slower decay
+detach_gmvae: false    # Allow TCP gradients to shape GMVAE features
+

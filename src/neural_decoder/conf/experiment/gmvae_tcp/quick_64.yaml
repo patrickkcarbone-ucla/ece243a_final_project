@@ -1,0 +1,243 @@
+# @package _global_
+# Pre-Patch GMVAE TCP - 64 CLUSTERS variant
+# Fine-grained neural patterns - more capacity for sub-phonemic details
+
+defaults:
+  - override /model: gmvae_tcp/base
+  - override /trainer: gmvae_tcp
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw_small_wd
+
+name: gmvae_tcp/quick_64
+
+saveModelWeights: false
+
+# ==============================================================================
+# Data
+# ==============================================================================
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+diphone_vocab_path: data/diphone_vocab.pkl
+
+# ==============================================================================
+# Training Parameters (50 epochs)
+# ==============================================================================
+nEpochs: 50
+batchSize: 64
+maxGradNorm: 1.0
+useMixedPrecision: false
+
+# ==============================================================================
+# Model Overrides - 64 CLUSTERS
+# ==============================================================================
+model:
+  use_tcp: true
+  use_gating: true
+  use_highway: true
+  detach_gmvae: false
+  n_clusters: 64  # FINE-GRAINED - more neural states
+  gmvae_hidden_dim: 320  # Larger - more clusters to distinguish
+
+gmvae_rec_type: mse
+
+# ==============================================================================
+# LR Schedule (same as quick.yaml)
+# ==============================================================================
+lr_schedule:
+  - name: warmup
+    start_epoch: 0
+    end_epoch: 2
+    function: linear
+    start_lr: 0.00006
+    end_lr: 0.0003
+
+  - name: decay1
+    start_epoch: 2
+    end_epoch: 10
+    function: cosine
+    start_lr: 0.0003
+    end_lr: 0.0002
+
+  - name: decay2
+    start_epoch: 10
+    end_epoch: 30
+    function: cosine
+    start_lr: 0.0002
+    end_lr: 0.00002
+
+  - name: decay3
+    start_epoch: 30
+    end_epoch: 50
+    function: cosine
+    start_lr: 0.00002
+    end_lr: 0.000002
+
+# ==============================================================================
+# TCP Loss Schedule (same as quick.yaml)
+# ==============================================================================
+loss_schedule:
+  alpha_di:
+    - name: dominance
+      start_epoch: 0
+      end_epoch: 4
+      function: constant
+      value: 0.9
+    - name: handoff_1
+      start_epoch: 4
+      end_epoch: 10
+      function: linear
+      start_value: 0.9
+      end_value: 0.7
+    - name: handoff_2
+      start_epoch: 10
+      end_epoch: 20
+      function: linear
+      start_value: 0.7
+      end_value: 0.5
+    - name: balanced
+      start_epoch: 20
+      end_epoch: 34
+      function: linear
+      start_value: 0.5
+      end_value: 0.4
+    - name: refinement
+      start_epoch: 34
+      end_epoch: 50
+      function: linear
+      start_value: 0.4
+      end_value: 0.25
+
+  alpha_mono:
+    - name: reduced
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 0.2
+    - name: standard
+      start_epoch: 10
+      end_epoch: 50
+      function: constant
+      value: 0.3
+
+  alpha_context:
+    - name: suppressed
+      start_epoch: 0
+      end_epoch: 8
+      function: constant
+      value: 0.1
+    - name: ramp
+      start_epoch: 8
+      end_epoch: 22
+      function: linear
+      start_value: 0.1
+      end_value: 0.35
+    - name: mature
+      start_epoch: 22
+      end_epoch: 50
+      function: constant
+      value: 0.35
+
+  alpha_fused:
+    - name: auxiliary_focus
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 0.5
+    - name: transition
+      start_epoch: 10
+      end_epoch: 20
+      function: linear
+      start_value: 0.5
+      end_value: 1.0
+    - name: primary
+      start_epoch: 20
+      end_epoch: 50
+      function: constant
+      value: 1.0
+
+  lambda_gate:
+    - name: exploration
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 0.03
+    - name: transition
+      start_epoch: 10
+      end_epoch: 24
+      function: linear
+      start_value: 0.03
+      end_value: 0.01
+    - name: specialization
+      start_epoch: 24
+      end_epoch: 50
+      function: linear
+      start_value: 0.01
+      end_value: 0.003
+
+  # ===========================================================================
+  # GMVAE Loss Schedules - 64 clusters (higher collapse risk)
+  # ===========================================================================
+  alpha_gmvae_rec:
+    - name: strong
+      start_epoch: 0
+      end_epoch: 50
+      function: constant
+      value: 0.3
+
+  alpha_gmvae_kl:
+    - name: moderate
+      start_epoch: 0
+      end_epoch: 15
+      function: constant
+      value: 2.0
+    - name: ramp
+      start_epoch: 15
+      end_epoch: 35
+      function: linear
+      start_value: 2.0
+      end_value: 5.0
+    - name: stable
+      start_epoch: 35
+      end_epoch: 50
+      function: constant
+      value: 5.0
+
+  # Higher alpha_gmvae_cat - need stronger diversity pressure for 64 clusters
+  alpha_gmvae_cat:
+    - name: strong
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 15.0
+    - name: stable
+      start_epoch: 25
+      end_epoch: 50
+      function: constant
+      value: 8.0
+
+  alpha_gmvae_sup:
+    - name: off
+      start_epoch: 0
+      end_epoch: 50
+      function: constant
+      value: 0.0
+
+  # Slightly higher temp for 64 clusters - need more exploration
+  gmvae_temp:
+    - name: warm
+      start_epoch: 0
+      end_epoch: 12
+      function: constant
+      value: 1.8
+    - name: anneal
+      start_epoch: 12
+      end_epoch: 40
+      function: linear
+      start_value: 1.8
+      end_value: 0.7
+    - name: stable
+      start_epoch: 40
+      end_epoch: 50
+      function: constant
+      value: 0.7
+

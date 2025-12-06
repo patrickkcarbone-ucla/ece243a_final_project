@@ -1,0 +1,10 @@
+# @package _global_
+# Extended training run with 20K batches
+defaults:
+  - override /model: gru/base
+  - override /optimizer: adam
+
+nBatch: 20000
+lrStart: 0.02
+lrEnd: 0.02
+name: baseline_gru/extended/lr02_20k

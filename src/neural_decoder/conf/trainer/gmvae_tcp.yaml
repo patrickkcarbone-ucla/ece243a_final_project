@@ -1,0 +1,5 @@
+# Pre-Patch GMVAE TCP Trainer
+# Combined TCP CTC + Frame-level GMVAE auxiliary losses
+_target_: neural_decoder.trainers.gmvae_tcp_trainer.GMVAETCPTrainer
+_recursive_: False
+

@@ -1,0 +1,3 @@
+# Trainer for TCP with Frozen GMVAE Features
+_target_: neural_decoder.trainers.tcp_gmvae_features_trainer.TCPWithGMVAEFeaturesTrainer
+_recursive_: False

@@ -1,0 +1,11 @@
+# @package _global_
+# Tests hypothesis: Is Area 44 (Broca's area) helping or hurting?
+# Uses only Area 6v (ventral premotor - first 128 channels)
+defaults:
+  - override /model: gru/6v_only
+  - override /optimizer: adam
+
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: baseline_gru/channel_ablation/6v_only_lr02

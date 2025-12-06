@@ -1,0 +1,4 @@
+_target_: neural_decoder.augmentations.AugmentationPipeline
+white_noise_sd: 0.8
+constant_offset_sd: 0.2
+

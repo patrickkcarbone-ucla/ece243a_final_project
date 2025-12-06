@@ -1,0 +1,14 @@
+# @package _global_
+# 1536 hidden + white noise 1.0 SD (control for mixup10/adapt10)
+defaults:
+  - override /model: gru/dual_region_6v_h1536
+  - override /augmentations: white_sd10
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+useDualRegion: true
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.01
+name: capacity_sweep/h1536_white10
+

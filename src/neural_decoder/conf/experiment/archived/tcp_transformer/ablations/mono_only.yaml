@@ -1,0 +1,53 @@
+# @package _global_
+# Ablation: TCP with only monophone head (no diphone, no context)
+# Tests the value of multi-level prediction
+# Based on curriculum_v2 settings
+defaults:
+  - override /model: transformer/tcp
+  - override /trainer: tcp_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/tcp/ablations/mono_only
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule
+nEpochs: 250
+lrWarmupEpochs: 5
+
+# Gradual LR decay (same as curriculum_v2)
+lrStepStartEpoch: 70
+lrStepEpochs: 10
+lrStepDecay: 0.055
+
+# LR
+optimizer:
+  lr: 0.001
+
+# Batch size
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP32 for stability
+useMixedPrecision: false
+
+# TCP - only monophone loss (disable diphone and context) - ABLATION POINT
+model:
+  use_gating: false
+  dropout: 0.4
+alpha_mono: 1.0 # Full weight on monophone
+alpha_di: 0.0 # No diphone loss
+alpha_context: 0.0 # No context loss
+lambda_gate: 0.0
+
+# No curriculum needed (no diphone to decay)
+use_tcp_curriculum: false
+
+# Diphone vocab (still needed for model init)
+diphone_vocab_path: data/diphone_vocab.pkl

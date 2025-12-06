@@ -1,0 +1,22 @@
+# Standalone GMVAE Model Configuration
+# Operates on 100ms patches (5 x 20ms bins)
+# Used for Phase 1: Pre-training GMVAE before TCP
+
+_target_: neural_decoder.models.gmvae.StandaloneGMVAE
+name: gmvae/standalone
+
+# Input configuration
+neural_dim: 256              # 6v channels only (256 channels)
+patch_len: 5                 # 5 time bins = 100ms patches
+patch_stride: 5              # Non-overlapping patches
+
+# GMVAE architecture
+hidden_dim: 512              # Internal hidden dimension
+z_dim: 64                    # Latent space dimension
+n_clusters: 40               # Number of Gaussian mixture components
+n_phonemes: 40               # For evaluation head
+
+# Temperature scheduling (Gumbel-Softmax)
+init_temp: 2.0               # Start with soft assignments
+min_temp: 0.5                # Minimum temperature
+decay_temp_rate: 0.02        # Decay rate per epoch

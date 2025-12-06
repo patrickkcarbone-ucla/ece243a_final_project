@@ -1,0 +1,56 @@
+# @package _global_
+# Quick screen: Transformer + Diphone with Feghhi schedule (100 epochs, FP16)
+#
+# Feghhi et al. schedule:
+#   - Epochs 0-9: Train ONLY diphones (100% diphone loss)
+#   - Epochs 10-19: 10% phoneme, 90% diphone
+#   - Epochs 20-29: 20% phoneme, 80% diphone
+#   - ... until 60% phoneme, 40% diphone
+#
+# This is INVERTED from our original schedule which started with phonemes.
+
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/diphone_feghhi
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Compressed schedule
+nEpochs: 100
+lrDecayEpoch: 60
+lrWarmupEpochs: 2
+
+# Standard LR
+optimizer:
+  lr: 0.001
+
+# Batch size
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP16 for speed
+useMixedPrecision: true
+
+# Enable diphone loss
+model:
+  use_diphone: true
+  n_diphones: 1600
+
+# Feghhi diphone schedule (scaled for 100 epochs)
+# Original: 10 warmup + 6*10 ramp = 70 epochs to reach max in 250 epoch run
+# Scaled: 4 warmup + 6*4 ramp = 28 epochs to reach max in 100 epoch run
+diphone_vocab_path: data/diphone_vocab.pkl
+diphone_feghhi_schedule: true   # Use Feghhi schedule (start with diphones)
+diphone_warmup_epochs: 4        # First 4 epochs: 100% diphone
+diphone_ramp_epochs: 4          # Increase phoneme by 0.1 every 4 epochs
+diphone_max_alpha: 0.6          # Final: 60% phoneme, 40% diphone
+

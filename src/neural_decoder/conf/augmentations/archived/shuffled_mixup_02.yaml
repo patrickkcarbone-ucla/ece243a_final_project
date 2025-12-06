@@ -1,0 +1,12 @@
+# Shuffled CrossAreaMixup - Control experiment
+# Shuffles Area 44 across time before mixing, destroying temporal alignment
+# If results = aligned mixup, then temporal alignment doesn't matter
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+mixup_ratio: 0.2
+shuffle_44: true  # NEW: shuffle 44 before mixing
+adaptive_noise_base: 0.0
+adaptive_noise_scale: 0.0
+corr_dropout_prob: 0.0
+white_noise_sd: 0.8
+constant_offset_sd: 0.2
+

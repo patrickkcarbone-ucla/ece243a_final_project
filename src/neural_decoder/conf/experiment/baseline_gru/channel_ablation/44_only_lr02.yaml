@@ -1,0 +1,12 @@
+# @package _global_
+# Tests hypothesis: How much does Area 44 (Broca's area) contribute alone?
+# Uses only Area 44 (last 128 channels)
+# RESULT: Area 44 has NO useful signal - CER stays at ~1.0
+defaults:
+  - override /model: gru/44_only
+  - override /optimizer: adam
+
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: baseline_gru/channel_ablation/44_only_lr02

@@ -1,0 +1,40 @@
+# @package _global_
+# Quick screen: Transformer + Intermediate CTC (100 epochs, FP16)
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/intermediate
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Compressed schedule
+nEpochs: 100
+lrDecayEpoch: 60
+lrWarmupEpochs: 2
+
+# Standard LR (0.002 caused divergence)
+optimizer:
+  lr: 0.001
+
+# Batch size
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP16 for speed
+useMixedPrecision: true
+
+# Enable intermediate CTC
+model:
+  use_intermediate_ctc: true
+  intermediate_layer: 2
+
+intermediate_ctc_weight: 0.3
+

@@ -1,0 +1,10 @@
+# Mixup calibrated to MORE noise than baseline (~1.0 SD total)
+# Mixup adds ~0.15 SD + white noise 0.95
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+mixup_ratio: 0.2
+adaptive_noise_base: 0.0
+adaptive_noise_scale: 0.0
+corr_dropout_prob: 0.0
+white_noise_sd: 0.95
+constant_offset_sd: 0.2
+

@@ -1,0 +1,12 @@
+# GRU with 1536 hidden units (1.5x baseline capacity)
+_target_: neural_decoder.models.gru.GRUDecoder
+name: gru/dual_region_6v_h1536
+neural_dim: 512
+n_classes: 40
+hidden_dim: 1536
+layer_dim: 5
+dropout: 0.4
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+use_channels: 6v_only

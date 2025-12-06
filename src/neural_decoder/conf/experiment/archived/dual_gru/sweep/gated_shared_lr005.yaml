@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - override /model: dual_stream/gated_shared
+  - override /optimizer: adam_lr005
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+nBatch: 10000
+lrStart: 0.005
+lrEnd: 0.005
+name: dual_gru/sweep/gated_shared_lr005

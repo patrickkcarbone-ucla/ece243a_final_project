@@ -1,0 +1,16 @@
+# @package _global_
+# Transformer + Intermediate CTC loss ONLY
+# Tests intermediate CTC in isolation
+defaults:
+  - override /experiment: transformer/base
+
+# Experiment name
+name: transformer/intermediate_only
+
+# Enable intermediate CTC
+model:
+  use_intermediate_ctc: true
+  intermediate_layer: 2  # Layer 3 of 5 (0-indexed)
+
+# Intermediate loss weight
+intermediate_ctc_weight: 0.3

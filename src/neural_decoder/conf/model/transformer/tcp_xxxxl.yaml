@@ -1,0 +1,33 @@
+# TCP Transformer XXXL - Triple Extra Large capacity
+# ~25% more than XXL, ~200% more than base
+# hidden_dim: 384 → 480 → 576 → 720 → 896 → 1120
+_target_: neural_decoder.models.tcp_transformer.TCPTransformer
+name: transformer/tcp_xxxl
+
+neural_dim: 256
+n_classes: 40
+
+hidden_dim: 1120
+num_layers: 12
+num_heads: 10
+ffn_dim: 4480
+
+patch_len: 5
+patch_stride: 5
+
+dropout: 0.35
+attn_dropout: 0.1
+input_dropout: 0.2
+
+max_rel_pos: 64
+
+num_masks: 25
+max_mask_fraction: 0.08
+
+use_tcp: true
+mono_layer: 4            # Early layer for monophones
+diphone_layer: 8         # Mid layer for diphones (adjusted for 10 layers)
+use_gating: true
+use_highway: true
+n_diphones: 1600
+

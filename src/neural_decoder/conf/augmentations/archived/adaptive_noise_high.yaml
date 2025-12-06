@@ -1,0 +1,9 @@
+# AdaptiveNoise44 with higher settings
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+mixup_ratio: 0.0
+adaptive_noise_base: 0.8
+adaptive_noise_scale: 0.5
+corr_dropout_prob: 0.0
+white_noise_sd: 0.0  # Disabled since adaptive noise is strong
+constant_offset_sd: 0.2
+

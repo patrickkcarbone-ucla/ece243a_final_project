@@ -1,0 +1,14 @@
+# @package _global_
+# CrossAreaMixup with 10% max ratio
+defaults:
+  - override /model: gru/dual_region_6v_only
+  - override /augmentations: mixup_01
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+useDualRegion: true
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: area44_aug/mixup_01
+

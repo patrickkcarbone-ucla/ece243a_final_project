@@ -1,0 +1,25 @@
+# @package _global_
+# Transformer with FP16 mixed precision (baseline + FP16)
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/fp16
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training
+nEpochs: 250
+lrDecayEpoch: 150
+lrDecayFactor: 0.1
+batchSize: 32
+maxGradNorm: 1.0
+
+# Enable FP16
+useMixedPrecision: true
+

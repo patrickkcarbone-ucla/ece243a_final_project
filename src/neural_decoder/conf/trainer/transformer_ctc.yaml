@@ -1,0 +1,3 @@
+_target_: neural_decoder.trainers.transformer_trainer.TransformerCTCTrainer
+_recursive_: False
+

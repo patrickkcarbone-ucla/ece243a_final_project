@@ -1,0 +1,6 @@
+# TCP Transformer CTC Trainer
+# Multi-level loss computation with optional gating
+_target_: neural_decoder.trainers.tcp_transformer_trainer.TCPTransformerTrainer
+_recursive_: False
+
+

@@ -1,0 +1,112 @@
+defaults:
+  - _self_
+  - model: gru/base
+  - trainer: ctc
+  - optimizer: adam
+  - augmentations: baseline
+  - experiment: null
+
+# Default name structure if not overridden by experiment
+# This ensures ad-hoc runs go to: logs/speech_logs/baseline_gru/default/DATE/TIME
+name: ${model.name}/default
+
+hydra:
+  # For single runs, write directly into our computed outputDir
+  run:
+    dir: ${outputRoot}/${name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+  # For sweeps, group runs under outputRoot and separate by override_dirname
+  sweep:
+    dir: ${outputRoot}/${name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}
+
+  job:
+    config:
+      override_dirname:
+        exclude_keys:
+          - outputRoot
+          - outputDir
+          - datasetPath
+          - model
+          - model.name
+          - trainer
+          - name
+
+# Base directory for all speech logs
+outputRoot: ./logs/speech_logs
+
+# outputDir is now dynamically determined by Hydra's run directory
+outputDir: ${hydra:runtime.output_dir}
+
+datasetPath: dual_region_data/ptDecoder_ctc
+
+# Use dual-region dataset mode (splits 512 channels into 6v + 44)
+# Required for Area 44-based augmentations (CrossAreaMixup, AdaptiveNoise44)
+useDualRegion: false
+
+seed: 0
+batchSize: 64
+nBatch: 10000
+evalFrequency: 200 # Evaluate every N batches
+
+# Model checkpoint saving (disabled by default to save disk space)
+# Override with: saveModelWeights=true
+saveModelWeights: false
+
+# Scheduler parameters used in training loop
+lrStart: 0.02
+lrEnd: 0.02
+
+# Epoch-based training (for Transformer)
+# Set nEpochs to enable epoch mode; leave null for batch mode
+nEpochs: null
+lrDecayEpoch: 150
+lrDecayFactor: 0.1
+lrDecayEpoch2: null # Optional second decay epoch
+lrDecayFactor2: 0.1 # Factor for second decay
+maxGradNorm: 1.0
+
+# Part 2: Diphone auxiliary loss (Transformer only)
+diphone_vocab_path: data/diphone_vocab.pkl
+diphone_max_alpha: 0.6
+diphone_ramp_epochs: 25
+diphone_warmup_epochs: 10 # Pure diphone epochs before ramping (Feghhi schedule)
+diphone_feghhi_schedule: false # If true: start 100% diphone, ramp UP phoneme
+
+# Part 2: Intermediate CTC loss weight
+intermediate_ctc_weight: 0.3
+
+# Part 2: Mixed precision training (FP16)
+useMixedPrecision: false
+
+# Part 3: LR warmup (Transformer only)
+lrWarmupEpochs: 5
+
+# Part 3: CR-CTC consistency regularization
+useCRCTC: false
+crctcBeta: 0.2
+crctcGradientAccum: true
+crctcStartEpoch: 0 # Epoch to start CR-CTC (0 = from beginning)
+crctcRampEpochs: 0 # Epochs to ramp β from 0 to crctcBeta (0 = no ramp)
+crctcHeavyMasks: 50 # Number of masks for heavy view
+crctcHeavyFraction: 0.375 # Max mask fraction for heavy view
+
+# Part 3: DietCORP test-time adaptation (Feghhi et al. 2025)
+# Uses CTC loss with greedy-decoded pseudo-labels + gradient clipping to 0.5
+useDietCORP: false
+dietcorpLR: 0.0005 # Paper: 5e-4 (mean of LR before/after decay)
+dietcorpViews: 64 # Paper: same as training batch size
+dietcorpEvalFrequency: 0 # Evaluate every N epochs (0 = disabled)
+dietcorpConfidenceThreshold: 0.5 # Skip adaptation for trials with avg confidence below this
+
+# TCP (Temporal Coarticulation Pyramid) parameters
+alpha_mono: 0.3 # Weight for monophone intermediate loss
+alpha_di: 0.4 # Weight for diphone loss
+alpha_context: 0.3 # Weight for context head loss
+lambda_gate: 0.01 # Gate entropy regularization weight
+
+# TCP curriculum schedule (alternative to Feghhi schedule)
+use_tcp_curriculum: false
+tcp_curriculum_start: 0.5 # Starting α_di for curriculum
+tcp_curriculum_end: 0.3 # Ending α_di for curriculum
+tcp_curriculum_epochs: 150 # Epochs to decay over

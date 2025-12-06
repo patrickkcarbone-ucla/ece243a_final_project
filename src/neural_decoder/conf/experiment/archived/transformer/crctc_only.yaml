@@ -1,0 +1,17 @@
+# @package _global_
+# Transformer + CR-CTC ONLY
+# Tests CR-CTC consistency regularization in isolation
+defaults:
+  - override /experiment: transformer/base
+
+# Experiment name
+name: transformer/crctc_only
+
+# Enable CR-CTC
+useCRCTC: true
+crctcBeta: 0.2
+crctcGradientAccum: true
+
+# Smaller batch size since CR-CTC requires 2x forward passes
+batchSize: 24
+

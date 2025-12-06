@@ -1,0 +1,14 @@
+# @package _global_
+# Best combo with lower learning rate (more regularization may need lower LR)
+defaults:
+  - override /model: gru/dual_region_6v_only
+  - override /augmentations: mixup_corr
+  - override /optimizer: adam_lr01
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+useDualRegion: true
+nBatch: 10000
+lrStart: 0.01
+lrEnd: 0.01
+name: area44_aug/mixup_corr_lr01
+

@@ -1,0 +1,19 @@
+# @package _global_
+# Transformer + Diphone auxiliary loss ONLY
+# Tests diphone loss in isolation
+defaults:
+  - override /experiment: transformer/base
+
+# Experiment name
+name: transformer/diphone_only
+
+# Enable diphone loss
+model:
+  use_diphone: true
+  n_diphones: 1600
+
+# Diphone loss settings
+diphone_vocab_path: data/diphone_vocab.pkl
+diphone_max_alpha: 0.6
+diphone_ramp_epochs: 25
+

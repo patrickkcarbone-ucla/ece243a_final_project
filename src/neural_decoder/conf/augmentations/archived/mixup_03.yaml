@@ -1,0 +1,9 @@
+# CrossAreaMixup with 30% max mixing ratio
+_target_: neural_decoder.augmentations.DualRegionAugmentationPipeline
+mixup_ratio: 0.3
+adaptive_noise_base: 0.0
+adaptive_noise_scale: 0.0
+corr_dropout_prob: 0.0
+white_noise_sd: 0.8
+constant_offset_sd: 0.2
+

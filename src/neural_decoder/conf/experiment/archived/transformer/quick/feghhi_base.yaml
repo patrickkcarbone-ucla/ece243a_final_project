@@ -1,0 +1,52 @@
+# @package _global_
+# Quick screen: Pure Feghhi Base Transformer (100 epochs, FP32)
+#
+# Core Feghhi et al. (2025) Time-Masked Transformer:
+#   - CTC loss ONLY (no diphones, no intermediate CTC, no CR-CTC, no TCP)
+#   - Time-masking augmentation
+#   - T5 relative positional embeddings
+#   - LR warmup
+#   - FP32 for stability
+#   - DietCORP evaluation every 50 epochs
+
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/feghhi_base
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule (100 epochs)
+nEpochs: 100
+lrDecayEpoch: 60
+lrDecayFactor: 0.1
+lrWarmupEpochs: 5
+
+# LR
+optimizer:
+  lr: 0.001
+
+# Batch size
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP32 for stability (no mixed precision)
+useMixedPrecision: false
+
+# DietCORP evaluation every 50 epochs (Feghhi et al. 2025)
+# Uses CTC loss with greedy-decoded pseudo-labels
+# With confidence filtering to skip noisy pseudo-labels
+dietcorpEvalFrequency: 50
+dietcorpViews: 64  # Same as training batch size
+dietcorpLR: 0.001  # Paper GitHub uses 1e-3 (paper text says 5e-4)
+dietcorpConfidenceThreshold: 0.5  # Only adapt trials with avg confidence >= this
+
+

@@ -1,0 +1,12 @@
+# Baseline GRU with 30% dropout
+_target_: neural_decoder.models.gru.GRUDecoder
+name: gru/dropout03
+neural_dim: 256
+n_classes: 40
+hidden_dim: 1024
+layer_dim: 5
+dropout: 0.3
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+

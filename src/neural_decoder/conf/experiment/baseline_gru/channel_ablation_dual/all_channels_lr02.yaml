@@ -1,0 +1,11 @@
+# @package _global_
+# Baseline GRU with all 512 channels (both regions) from dual-region dataset
+defaults:
+  - override /model: gru/dual_region
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: baseline_gru/channel_ablation_dual/all_channels_lr02

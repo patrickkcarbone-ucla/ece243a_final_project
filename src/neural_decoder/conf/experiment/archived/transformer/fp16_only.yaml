@@ -1,0 +1,12 @@
+# @package _global_
+# Transformer + FP16 mixed precision ONLY
+# Tests whether FP16 affects accuracy
+defaults:
+  - override /experiment: transformer/base
+
+# Experiment name
+name: transformer/fp16_only
+
+# Enable FP16
+useMixedPrecision: true
+

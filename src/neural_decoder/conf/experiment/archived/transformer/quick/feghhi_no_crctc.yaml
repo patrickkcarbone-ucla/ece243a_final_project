@@ -1,0 +1,61 @@
+# @package _global_
+# Quick screen: Feghhi et al. (2025) WITHOUT CR-CTC
+#
+# Feghhi features ENABLED:
+#   1. Time-Masked Transformer architecture
+#   2. Feghhi diphone schedule (start 100% diphone, ramp up phoneme)
+#   3. Intermediate CTC loss from layer 3 (λ=0.3)
+#   4. LR warmup (5 epochs)
+#   5. FP16 mixed precision
+#
+# CR-CTC DISABLED (faster training, no 2x forward passes)
+
+defaults:
+  - override /model: transformer/full
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/feghhi_no_crctc
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule
+nEpochs: 100
+lrWarmupEpochs: 5
+
+# Refined LR decay schedule
+lrDecayEpoch: 50
+lrDecayFactor: 0.1
+lrDecayEpoch2: 80
+lrDecayFactor2: 0.1
+
+optimizer:
+  lr: 0.001
+
+batchSize: 32  # Full batch (no CR-CTC overhead)
+maxGradNorm: 1.0
+useMixedPrecision: true
+
+model:
+  use_diphone: true
+  n_diphones: 1600
+  use_intermediate_ctc: true
+  intermediate_layer: 2
+
+# Feghhi diphone schedule
+diphone_vocab_path: data/diphone_vocab.pkl
+diphone_feghhi_schedule: true
+diphone_warmup_epochs: 4
+diphone_ramp_epochs: 4
+diphone_max_alpha: 0.6
+
+intermediate_ctc_weight: 0.3
+
+# NO CR-CTC
+useCRCTC: false
+
+

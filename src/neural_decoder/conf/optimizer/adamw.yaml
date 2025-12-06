@@ -1,0 +1,6 @@
+_target_: torch.optim.AdamW
+lr: 0.001
+betas: [0.9, 0.98]
+eps: 1e-9
+weight_decay: 0.01 # Increased from 1e-5 - much stronger regularization
+

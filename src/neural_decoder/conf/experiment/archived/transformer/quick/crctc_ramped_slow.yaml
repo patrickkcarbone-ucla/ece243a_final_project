@@ -1,0 +1,41 @@
+# @package _global_
+# Quick screen: Transformer + CR-CTC (ramped) (100 epochs, FP16)
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/crctc_ramped_slow
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Compressed schedule
+nEpochs: 100
+lrDecayEpoch: 60
+lrWarmupEpochs: 2
+
+# Standard LR
+optimizer:
+  lr: 0.001
+
+# Smaller batch for CR-CTC (2x forward passes)
+batchSize: 24
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP16 for speed
+useMixedPrecision: true
+
+# Enable CR-CTC with ramped β
+useCRCTC: true
+crctcBeta: 0.2          # Max β
+crctcStartEpoch: 30     # Delay consistency until epoch 10
+crctcRampEpochs: 50     # Linearly ramp β from 0 → 0.2 over epochs 10–30
+crctcGradientAccum: true
+
+

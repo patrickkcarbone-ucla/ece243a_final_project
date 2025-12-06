@@ -1,0 +1,7 @@
+# @package _global_
+defaults:
+  - override /model: dual_stream/gated_separate
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+nBatch: 1000
+name: dual_gru/gated_separate_nBatch1000

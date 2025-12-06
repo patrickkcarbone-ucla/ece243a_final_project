@@ -1,0 +1,12 @@
+# @package _global_
+# Tests: Area 6v only (channels 0-255: tx1 + spikePow from ventral premotor)
+# BEST CONFIGURATION - outperforms using all channels
+defaults:
+  - override /model: gru/dual_region_6v_only
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: baseline_gru/channel_ablation_dual/6v_only_lr02

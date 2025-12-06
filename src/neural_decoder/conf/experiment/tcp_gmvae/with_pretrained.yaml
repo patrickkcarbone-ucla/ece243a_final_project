@@ -1,0 +1,213 @@
+# @package _global_
+# TCP with Pre-trained GMVAE Features (Phase 2)
+#
+# Train TCP Transformer using frozen GMVAE cluster features.
+# GMVAE must be trained first using experiment=gmvae/standalone
+#
+# Usage:
+#   python scripts/train_model.py experiment=tcp_gmvae/with_pretrained \
+#       gmvae_weights_path=logs/speech_logs/gmvae/standalone/.../modelWeights
+#
+# Based on TCP XXXL Gated configuration (~18.5% PER baseline)
+
+defaults:
+  - override /model: tcp_gmvae/with_features
+  - override /trainer: tcp_gmvae_features
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: tcp_gmvae/with_pretrained
+
+# ==============================================================================
+# IMPORTANT: GMVAE Weights Path
+# ==============================================================================
+# You MUST provide this path either:
+# 1. Override in this file (uncomment and edit below)
+# 2. Pass via command line: gmvae_weights_path=/path/to/weights
+#
+# Example paths:
+#   logs/speech_logs/gmvae/standalone/2024-01-15/12-30-00/modelWeights
+#   /content/drive/MyDrive/ece243a_final_project/logs/gmvae/standalone/.../modelWeights
+
+# Uncomment and set your path:
+# gmvae_weights_path: logs/speech_logs/gmvae/standalone/YYYY-MM-DD/HH-MM-SS/modelWeights
+
+# ==============================================================================
+# Data
+# ==============================================================================
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP_balanced
+useDualRegion: true
+diphone_vocab_path: data/diphone_vocab.pkl
+
+# ==============================================================================
+# Training Parameters (from TCP XXXL Gated)
+# ==============================================================================
+nEpochs: 125
+batchSize: 64
+maxGradNorm: 1.0
+useMixedPrecision: false
+saveModelWeights: true
+
+# ==============================================================================
+# Model Overrides
+# ==============================================================================
+model:
+  use_gating: true
+  use_highway: true
+
+# ==============================================================================
+# TCP Loss Weights
+# ==============================================================================
+alpha_mono: 0.3
+alpha_di: 0.4
+alpha_context: 0.3
+alpha_fused: 1.0
+lambda_gate: 0.01
+
+# ==============================================================================
+# LR Schedule (from TCP XXXL Gated)
+# ==============================================================================
+lr_schedule:
+  - name: warmup
+    start_epoch: 0
+    end_epoch: 4
+    function: linear
+    start_lr: 0.00006
+    end_lr: 0.0003
+
+  - name: decay1
+    start_epoch: 4
+    end_epoch: 25
+    function: cosine
+    start_lr: 0.0003
+    end_lr: 0.0002
+
+  - name: decay2
+    start_epoch: 25
+    end_epoch: 30
+    function: linear
+    start_lr: 0.0002
+    end_lr: 0.00015
+
+  - name: decay3
+    start_epoch: 30
+    end_epoch: 75
+    function: cosine
+    start_lr: 0.00015
+    end_lr: 0.00002
+
+  - name: decay4
+    start_epoch: 75
+    end_epoch: 125
+    function: cosine
+    start_lr: 0.00002
+    end_lr: 0.000002
+
+# ==============================================================================
+# Loss Schedule (from TCP XXXL Gated - DCoND style)
+# ==============================================================================
+loss_schedule:
+  # ==============================================================
+  # PHASE 1 (Epochs 0-25): Diphone Dominance
+  # ==============================================================
+  # PHASE 2 (Epochs 25-55): Gradual Handoff
+  # ==============================================================
+  # PHASE 3 (Epochs 55-125): Fusion Focus
+  # ==============================================================
+
+  alpha_di:
+    - name: dominance
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 0.9
+    - name: handoff_1
+      start_epoch: 10
+      end_epoch: 25
+      function: linear
+      start_value: 0.9
+      end_value: 0.7
+    - name: handoff_2
+      start_epoch: 25
+      end_epoch: 50
+      function: linear
+      start_value: 0.7
+      end_value: 0.5
+    - name: balanced
+      start_epoch: 50
+      end_epoch: 85
+      function: linear
+      start_value: 0.5
+      end_value: 0.4
+    - name: refinement
+      start_epoch: 85
+      end_epoch: 125
+      function: linear
+      start_value: 0.4
+      end_value: 0.25
+
+  alpha_mono:
+    - name: reduced
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.2
+    - name: standard
+      start_epoch: 25
+      end_epoch: 125
+      function: constant
+      value: 0.3
+
+  alpha_context:
+    - name: suppressed
+      start_epoch: 0
+      end_epoch: 20
+      function: constant
+      value: 0.1
+    - name: ramp
+      start_epoch: 20
+      end_epoch: 55
+      function: linear
+      start_value: 0.1
+      end_value: 0.35
+    - name: mature
+      start_epoch: 55
+      end_epoch: 125
+      function: constant
+      value: 0.35
+
+  alpha_fused:
+    - name: auxiliary_focus
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.5
+    - name: transition
+      start_epoch: 25
+      end_epoch: 50
+      function: linear
+      start_value: 0.5
+      end_value: 1.0
+    - name: primary
+      start_epoch: 50
+      end_epoch: 125
+      function: constant
+      value: 1.0
+
+  lambda_gate:
+    - name: exploration
+      start_epoch: 0
+      end_epoch: 60
+      function: constant
+      value: 0.03
+    - name: transition
+      start_epoch: 60
+      end_epoch: 90
+      function: linear
+      start_value: 0.03
+      end_value: 0.015
+    - name: floor
+      start_epoch: 90
+      end_epoch: 125
+      function: constant
+      value: 0.015

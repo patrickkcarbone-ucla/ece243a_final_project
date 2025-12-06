@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - override /model: gru/base
+  - override /optimizer: adam
+
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: baseline_gru/sweep/lr02

@@ -1,0 +1,2 @@
+_target_: neural_decoder.trainers.ctc_trainer.CTCTrainer
+_recursive_: False

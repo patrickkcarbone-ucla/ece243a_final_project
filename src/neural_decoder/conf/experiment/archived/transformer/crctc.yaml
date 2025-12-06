@@ -1,0 +1,14 @@
+# @package _global_
+# CR-CTC Consistency Regularization experiment
+# Uses two augmented views with consistency loss for improved generalization
+defaults:
+  - override /experiment: transformer/base
+
+# Experiment name
+name: transformer/crctc
+
+# Enable CR-CTC
+useCRCTC: true
+crctcBeta: 0.2
+crctcGradientAccum: true  # Use gradient accumulation (saves memory)
+

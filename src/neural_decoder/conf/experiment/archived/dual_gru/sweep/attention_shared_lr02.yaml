@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - override /model: dual_stream/attention_shared
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: dual_gru/sweep/attention_shared_lr02

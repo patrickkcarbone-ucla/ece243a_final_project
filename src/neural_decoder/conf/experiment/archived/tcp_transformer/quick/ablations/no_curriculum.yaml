@@ -1,0 +1,41 @@
+# @package _global_
+# Quick ablation: TCP without curriculum (fixed α_di = 0.4)
+# 100 epochs, FP16
+defaults:
+  - override /model: transformer/tcp
+  - override /trainer: tcp_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: transformer/tcp/quick/ablations/no_curriculum
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Compressed schedule (100 epochs)
+nEpochs: 100
+lrDecayEpoch: 60
+lrDecayFactor: 0.1
+lrWarmupEpochs: 5
+
+optimizer:
+  lr: 0.001
+
+batchSize: 32
+maxGradNorm: 1.0
+useMixedPrecision: false
+
+# TCP with gating but NO curriculum - ABLATION POINT
+model:
+  use_gating: true
+  dropout: 0.4
+alpha_mono: 0.3
+alpha_context: 0.3
+lambda_gate: 0.01
+
+# Fixed α_di = 0.4 (no curriculum decay)
+use_tcp_curriculum: false
+alpha_di: 0.4
+
+diphone_vocab_path: data/diphone_vocab.pkl
+

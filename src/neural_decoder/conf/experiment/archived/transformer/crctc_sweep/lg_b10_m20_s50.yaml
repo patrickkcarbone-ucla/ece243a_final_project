@@ -1,0 +1,44 @@
+# @package _global_
+# CR-CTC sweep: Large model + light CR-CTC + very delayed start
+defaults:
+  - override /model: transformer/large
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: transformer/crctc_sweep/lg_b10_m20_s50
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule (100 epochs quick screen)
+nEpochs: 100
+lrDecayEpoch: 60
+lrWarmupEpochs: 2
+
+optimizer:
+  lr: 0.001
+
+batchSize: 24
+maxGradNorm: 1.0
+useMixedPrecision: true
+
+# Enable diphone + intermediate (our best baseline)
+model:
+  use_diphone: true
+  use_intermediate_ctc: true
+
+diphone_max_alpha: 0.6
+diphone_ramp_epochs: 25
+intermediate_ctc_weight: 0.3
+
+# CR-CTC: Light settings
+useCRCTC: true
+crctcBeta: 0.10              # Low β
+crctcStartEpoch: 50          # Start very late
+crctcRampEpochs: 40          # Slow ramp (reaches 0.10 at epoch 90)
+crctcHeavyMasks: 20          # ~2x base masking
+crctcHeavyFraction: 0.15     # Moderate mask fraction
+crctcGradientAccum: true
+

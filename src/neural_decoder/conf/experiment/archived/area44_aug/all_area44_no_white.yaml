@@ -1,0 +1,14 @@
+# @package _global_
+# All Area44 strategies REPLACE white noise entirely
+defaults:
+  - override /model: gru/dual_region_6v_only
+  - override /augmentations: all_area44_no_white
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+useDualRegion: true
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: area44_aug/all_area44_no_white
+

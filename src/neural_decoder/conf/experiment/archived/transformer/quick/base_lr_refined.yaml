@@ -1,0 +1,44 @@
+# @package _global_
+# Quick screen: Base Transformer with refined LR schedule
+# 
+# Changes from base:
+# - Earlier first decay (epoch 50 instead of 60) - model plateaued earlier
+# - Second decay at epoch 80 to squeeze out more performance
+# - Schedule: warmup → 0.001 → 0.0001 (ep50) → 0.00001 (ep80)
+
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/quick/base_lr_refined
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule
+nEpochs: 100
+lrWarmupEpochs: 5
+
+# Refined LR decay schedule
+lrDecayEpoch: 50       # First decay earlier (was 60)
+lrDecayFactor: 0.1     # 0.001 → 0.0001
+lrDecayEpoch2: 80      # Second decay
+lrDecayFactor2: 0.1    # 0.0001 → 0.00001
+
+# LR
+optimizer:
+  lr: 0.001
+
+# Batch size
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP16 for speed
+useMixedPrecision: true
+

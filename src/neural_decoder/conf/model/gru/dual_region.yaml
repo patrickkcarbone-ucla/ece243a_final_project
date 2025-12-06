@@ -1,0 +1,15 @@
+# GRU for dual-region (512 channel) dataset using all channels
+# Channel layout: [6v_tx1, 6v_spikePow, 44_tx1, 44_spikePow]
+# NOTE: Adding 44 channels hurts performance vs 6v-only
+_target_: neural_decoder.models.gru.GRUDecoder
+name: gru/dual_region
+neural_dim: 512
+n_classes: 40
+hidden_dim: 1024
+layer_dim: 5
+dropout: 0.4
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+use_channels: all
+

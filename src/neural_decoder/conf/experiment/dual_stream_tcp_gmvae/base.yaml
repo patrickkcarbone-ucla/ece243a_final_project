@@ -1,0 +1,203 @@
+# @package _global_
+# Dual-Stream TCP + GMVAE Base Experiment
+# Combines full TCP Transformer with SUPERVISED GMVAE clustering
+#
+# Key changes from v1:
+# - Supervised clustering (alpha_gmvae_sup) maps clusters to phonemes
+# - Much higher categorical entropy weight to prevent cluster collapse
+# - Stronger fusion gate regularization for balanced contribution
+
+defaults:
+  - override /model: dual_stream_tcp_gmvae/base
+  - override /trainer: dual_stream_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: dual_stream_tcp_gmvae/base
+
+saveModelWeights: True
+
+# ==============================================================================
+# Data
+# ==============================================================================
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+diphone_vocab_path: data/diphone_vocab.pkl
+
+# ==============================================================================
+# Training Parameters
+# ==============================================================================
+nEpochs: 150 # Extended for supervised GMVAE to converge
+batchSize: 64
+maxGradNorm: 1.0
+useMixedPrecision: false
+
+# ==============================================================================
+# Model Overrides (TCP settings)
+# ==============================================================================
+model:
+  use_tcp: true
+  use_gating: true
+  use_highway: true
+
+gmvae_rec_type: mse
+
+# ==============================================================================
+# LR Schedule (longer warmup, slower decay)
+# ==============================================================================
+lr_schedule:
+  - name: warmup
+    start_epoch: 0
+    end_epoch: 8
+    function: linear
+    start_lr: 0.00004
+    end_lr: 0.0003
+
+  - name: plateau
+    start_epoch: 8
+    end_epoch: 30 # Slightly longer plateau
+    function: constant
+    value: 0.0003
+
+  - name: decay1
+    start_epoch: 30
+    end_epoch: 100 # Much longer, gentler decay
+    function: cosine
+    start_lr: 0.0003
+    end_lr: 0.00012 # HIGHER floor - maintain learning capacity
+
+  - name: decay2
+    start_epoch: 100
+    end_epoch: 150
+    function: cosine
+    start_lr: 0.00012
+    end_lr: 0.00002 # Fine-tuning phase
+
+# ===========================================================================
+# TCP Loss Schedule
+# ===========================================================================
+loss_schedule:
+  alpha_di:
+    - name: dominance
+      start_epoch: 0
+      end_epoch: 60
+      function: constant
+      value: 0.8
+    - name: settle
+      start_epoch: 60
+      end_epoch: 150
+      function: cosine
+      start_value: 0.8
+      end_value: 0.4
+  alpha_mono:
+    - name: constant
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 0.25
+  alpha_context:
+    - name: suppressed
+      start_epoch: 0
+      end_epoch: 70
+      function: constant
+      value: 0.1
+    - name: ramp
+      start_epoch: 70
+      end_epoch: 150
+      function: cosine
+      start_value: 0.1
+      end_value: 0.35
+  alpha_fused:
+    - name: constant
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 0.2
+  lambda_gate:
+    - name: exploration
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 0.03
+
+  # ===========================================================================
+  # GMVAE TCP Feature Reconstruction Loss Schedule
+  # ===========================================================================
+  alpha_gmvae_rec_tcp:
+    - name: constant
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 0.1
+
+  # ===========================================================================
+  # GMVAE Raw Patch Reconstruction Loss Schedule
+  # ===========================================================================
+  alpha_gmvae_rec_patch:
+    - name: constant
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 0.05
+
+  # ===========================================================================
+  # GMVAE KL Loss Schedule
+  # ===========================================================================
+  alpha_gmvae_kl:
+    - name: stable
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 20.0
+
+  # ===========================================================================
+  # GMVAE Categorical Entropy Schedule
+  # ===========================================================================
+  alpha_gmvae_cat:
+    - name: stable
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 1.0
+
+  # ===========================================================================
+  # GMVAE Supervised Clustering Loss (NEW!)
+  # Cross-entropy between cluster assignments and phoneme labels
+  # ===========================================================================
+  alpha_gmvae_sup:
+    - name: supervised
+      start_epoch: 0
+      end_epoch: 150
+      function: constant
+      value: 5.0
+
+  # ===========================================================================
+  # Fusion Gate Regularization Schedule
+  # ===========================================================================
+  lambda_fusion_gate:
+    - name: strong_balance
+      start_epoch: 0
+      end_epoch: 60
+      function: constant
+      value: 0.08 # 4x higher - push toward 0.5
+    - name: relax
+      start_epoch: 60
+      end_epoch: 100
+      function: linear
+      start_value: 0.08
+      end_value: 0.02
+    - name: settle
+      start_epoch: 100
+      end_epoch: 150
+      function: constant
+      value: 0.02
+
+  # ===========================================================================
+  # GMVAE Temperature Schedule (Gumbel-Softmax temperature)
+  # ===========================================================================
+  gmvae_temp:
+    - name: stable
+      start_epoch: 100
+      end_epoch: 150
+      function: constant
+      value: 1.0

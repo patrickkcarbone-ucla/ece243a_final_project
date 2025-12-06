@@ -1,0 +1,52 @@
+# @package _global_
+# Full Time-Masked Transformer with Parts 2 & 3 enhancements
+# Part 2:
+# - Diphone auxiliary loss with alpha ramping
+# - Intermediate CTC loss at layer 3
+# - Mixed precision (FP16) training
+# Part 3:
+# - LR warmup (5 epochs)
+# - CR-CTC consistency regularization
+defaults:
+  - override /model: transformer/full
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name
+name: transformer/full
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Epoch-based training
+nEpochs: 250
+lrDecayEpoch: 150
+lrDecayFactor: 0.1
+
+# Batch size (reduced for CR-CTC which requires 2x forward passes)
+batchSize: 24
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# Part 2: Diphone loss settings
+diphone_vocab_path: data/diphone_vocab.pkl
+diphone_max_alpha: 0.6       # Max weight for diphone loss
+diphone_ramp_epochs: 25      # Increase alpha by 0.1 every N epochs
+
+# Part 2: Intermediate CTC loss
+intermediate_ctc_weight: 0.3
+
+# Part 2: Mixed precision
+useMixedPrecision: true
+
+# Part 3: LR warmup
+lrWarmupEpochs: 5
+
+# Part 3: CR-CTC consistency regularization
+useCRCTC: true
+crctcBeta: 0.2
+crctcGradientAccum: true     # Use gradient accumulation (saves memory)
+

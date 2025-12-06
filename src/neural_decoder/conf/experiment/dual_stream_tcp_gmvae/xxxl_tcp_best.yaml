@@ -1,0 +1,304 @@
+# @package _global_
+# Dual-Stream TCP + GMVAE with XXXL TCP Best Parameters
+# TCP params from transformer/tcp/quick_xxxl/gated best run
+
+defaults:
+  - override /model: dual_stream_tcp_gmvae/xxxl_tcp
+  - override /trainer: dual_stream_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw_small_wd # alt: adamw
+
+name: dual_stream_tcp_gmvae/xxxl_tcp_best
+
+saveModelWeights: True
+
+# ==============================================================================
+# Data
+# ==============================================================================
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+diphone_vocab_path: data/diphone_vocab.pkl
+
+# ==============================================================================
+# Training Parameters
+# ==============================================================================
+nEpochs: 125
+batchSize: 64
+maxGradNorm: 1.0
+useMixedPrecision: false
+
+# ==============================================================================
+# Model Overrides (TCP settings)
+# ==============================================================================
+model:
+  use_tcp: true
+  use_gating: true
+  use_highway: true
+
+gmvae_rec_type: mse
+
+# ==============================================================================
+# LR Schedule (from tcp_xxxl best)
+# ==============================================================================
+lr_schedule:
+  - name: warmup
+    start_epoch: 0
+    end_epoch: 4
+    function: linear
+    start_lr: 0.00006
+    end_lr: 0.0003
+
+  - name: decay1
+    start_epoch: 4
+    end_epoch: 25
+    function: cosine
+    start_lr: 0.0003
+    end_lr: 0.0002
+
+  - name: decay2
+    start_epoch: 25
+    end_epoch: 75
+    function: cosine
+    start_lr: 0.0002
+    end_lr: 0.00002
+
+  - name: decay3
+    start_epoch: 75
+    end_epoch: 125
+    function: cosine
+    start_lr: 0.00002
+    end_lr: 0.000002
+
+# ===========================================================================
+# TCP Loss Schedule (from tcp_xxxl best)
+# ===========================================================================
+loss_schedule:
+  alpha_di:
+    - name: dominance
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 0.9
+    - name: handoff_1
+      start_epoch: 10
+      end_epoch: 25
+      function: linear
+      start_value: 0.9
+      end_value: 0.7
+    - name: handoff_2
+      start_epoch: 25
+      end_epoch: 50
+      function: linear
+      start_value: 0.7
+      end_value: 0.5
+    - name: balanced
+      start_epoch: 50
+      end_epoch: 85
+      function: linear
+      start_value: 0.5
+      end_value: 0.4
+    - name: refinement
+      start_epoch: 85
+      end_epoch: 125
+      function: linear
+      start_value: 0.4
+      end_value: 0.25
+  alpha_mono:
+    - name: reduced
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.2
+    - name: standard
+      start_epoch: 25
+      end_epoch: 125
+      function: constant
+      value: 0.3
+  alpha_context:
+    - name: suppressed
+      start_epoch: 0
+      end_epoch: 20
+      function: constant
+      value: 0.1
+    - name: ramp
+      start_epoch: 20
+      end_epoch: 55
+      function: linear
+      start_value: 0.1
+      end_value: 0.35
+    - name: mature
+      start_epoch: 55
+      end_epoch: 125
+      function: constant
+      value: 0.35
+  alpha_fused:
+    - name: auxiliary_focus
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.5
+    - name: transition
+      start_epoch: 25
+      end_epoch: 50
+      function: linear
+      start_value: 0.5
+      end_value: 1.0
+    - name: primary
+      start_epoch: 50
+      end_epoch: 125
+      function: constant
+      value: 1.0
+  lambda_gate:
+    - name: exploration
+      start_epoch: 0
+      end_epoch: 25
+      function: constant
+      value: 0.03
+    - name: transition
+      start_epoch: 25
+      end_epoch: 60
+      function: linear
+      start_value: 0.03
+      end_value: 0.01
+    - name: specialization
+      start_epoch: 60
+      end_epoch: 125
+      function: linear
+      start_value: 0.01
+      end_value: 0.003
+
+  # ===========================================================================
+  # GMVAE TCP Feature Reconstruction Loss Schedule
+  # Reconstructing learned TCP representations (phonetically structured)
+  # ===========================================================================
+  alpha_gmvae_rec_tcp:
+    - name: emphasis
+      start_epoch: 0
+      end_epoch: 30
+      function: constant
+      value: 0.15 # Higher early to establish good latent representations
+    - name: maintenance
+      start_epoch: 30
+      end_epoch: 125
+      function: constant
+      value: 0.1
+
+  # ===========================================================================
+  # GMVAE Raw Patch Reconstruction Loss Schedule
+  # Cross-modal reconstruction to maintain connection to neural data
+  # ===========================================================================
+  alpha_gmvae_rec_patch:
+    - name: emphasis
+      start_epoch: 0
+      end_epoch: 30
+      function: constant
+      value: 0.1 # Lower than TCP rec since patches lack structure
+    - name: maintenance
+      start_epoch: 30
+      end_epoch: 125
+      function: constant
+      value: 0.05
+
+  # ===========================================================================
+  # GMVAE KL Loss Schedule
+  # Keep minimal early, ramp up later for regularization
+  # ===========================================================================
+  alpha_gmvae_kl:
+    - name: minimal
+      start_epoch: 0
+      end_epoch: 30
+      function: constant
+      value: 0.5 # Even lower - don't fight supervision early
+    - name: ramp_up
+      start_epoch: 30
+      end_epoch: 70
+      function: linear
+      start_value: 0.5
+      end_value: 5.0
+    - name: stable
+      start_epoch: 70
+      end_epoch: 125
+      function: constant
+      value: 5.0
+
+  # ===========================================================================
+  # GMVAE Categorical Entropy Schedule
+  # Keep high throughout to prevent collapse with lower temperature
+  # ===========================================================================
+  alpha_gmvae_cat:
+    - name: prevent_collapse
+      start_epoch: 0
+      end_epoch: 60
+      function: constant
+      value: 40.0 # Higher - compensate for lower temp
+    - name: relax
+      start_epoch: 60
+      end_epoch: 100
+      function: linear
+      start_value: 40.0
+      end_value: 15.0
+    - name: stable
+      start_epoch: 100
+      end_epoch: 125
+      function: constant
+      value: 15.0
+
+  # ===========================================================================
+  # GMVAE Supervised Clustering Loss
+  # L_sup stuck at 3.15 (random=3.69) - MUCH stronger supervision!
+  # ===========================================================================
+  alpha_gmvae_sup:
+    - name: dominant
+      start_epoch: 0
+      end_epoch: 60
+      function: constant
+      value: 25.0 # Very strong - force cluster-phoneme alignment
+    - name: relax
+      start_epoch: 60
+      end_epoch: 125
+      function: constant
+      value: 15.0
+
+  # ===========================================================================
+  # Fusion Gate Regularization Schedule
+  # ===========================================================================
+  lambda_fusion_gate:
+    - name: strong_balance
+      start_epoch: 0
+      end_epoch: 50
+      function: constant
+      value: 0.08
+    - name: relax
+      start_epoch: 50
+      end_epoch: 85
+      function: linear
+      start_value: 0.08
+      end_value: 0.02
+    - name: settle
+      start_epoch: 85
+      end_epoch: 125
+      function: constant
+      value: 0.02
+
+  # ===========================================================================
+  # GMVAE Temperature Schedule (Gumbel-Softmax temperature)
+  # CRITICAL: Lower temp = sharper cluster assignments = supervision can work
+  # temp=2.0 made assignments too soft, L_sup couldn't learn
+  # ===========================================================================
+  gmvae_temp:
+    - name: warm
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 1.2 # Moderate - allow some exploration
+    - name: anneal
+      start_epoch: 10
+      end_epoch: 40
+      function: linear
+      start_value: 1.2
+      end_value: 0.5 # Sharp assignments for supervision
+    - name: cold
+      start_epoch: 40
+      end_epoch: 125
+      function: constant
+      value: 0.5 # Stay sharp - let supervision guide clusters

@@ -1,0 +1,59 @@
+# Dual-Stream TCP + GMVAE Model Configuration
+_target_: neural_decoder.models.dual_stream_tcp_gmvae.DualStreamTCPGMVAE
+name: dual_stream_tcp_gmvae/base
+
+# ==============================================================================
+# Common Parameters
+# ==============================================================================
+neural_dim: 256
+n_classes: 40
+nDays: 24
+device: cuda
+
+# ==============================================================================
+# Transformer Architecture (matching tcp_xxxl.yaml)
+# ==============================================================================
+hidden_dim: 720
+num_layers: 8
+num_heads: 10
+ffn_dim: 2880
+patch_len: 5
+patch_stride: 5
+dropout: 0.42 # Increased from 0.35 - combat overfitting
+attn_dropout: 0.15 # Increased from 0.1
+input_dropout: 0.25 # Increased from 0.2
+max_rel_pos: 64
+
+# Time masking (more aggressive)
+num_masks: 28 # Increased from 20
+max_mask_fraction: 0.10 # Increased from 0.075
+
+# ==============================================================================
+# TCP Parameters
+# ==============================================================================
+use_tcp: true
+mono_layer: 2
+diphone_layer: 5
+use_gating: true
+use_highway: true
+fixed_gate_weights: [0.33, 0.33, 0.34]
+n_diphones: 1600
+
+# ==============================================================================
+# GMVAE Parameters
+# ==============================================================================
+gmvae_hidden_dim: 512
+gmvae_z_dim: 64
+n_clusters: 40 # Match number of phonemes for supervised clustering
+gmvae_init_temp: 1.0
+gmvae_min_temp: 0.5
+gmvae_decay_temp_rate: 0.013
+gmvae_tap_layer: 2      # Tap TCP at mono_layer for phonetically-structured input
+detach_gmvae_input: false  # Allow gradients to flow from GMVAE back through TCP
+
+# ==============================================================================
+# Fusion Parameters
+# ==============================================================================
+# Options: gated, concat, add, attention
+fusion_method: gated
+fusion_dropout: 0.15 # Increased from 0.1

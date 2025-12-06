@@ -1,0 +1,40 @@
+# TCP (Temporal Coarticulation Pyramid) Transformer
+# Multi-level prediction heads with optional learned gating
+_target_: neural_decoder.models.tcp_transformer.TCPTransformer
+name: transformer/tcp
+
+# Input/output dimensions
+neural_dim: 256          # 6v channels from dual-region dataset
+n_classes: 40            # Phoneme classes (+ blank added in model)
+
+# Transformer architecture
+hidden_dim: 384          # Transformer hidden dimension
+num_layers: 5            # Number of Transformer blocks
+num_heads: 6             # Attention heads (head_dim = 384/6 = 64)
+ffn_dim: 1536            # Feed-forward dimension (4x hidden)
+
+# Patch embedding
+patch_len: 5             # 5 time bins = 100ms per patch
+patch_stride: 5          # Non-overlapping patches
+
+# Dropout rates
+dropout: 0.35            # FFN dropout
+attn_dropout: 0.1        # Attention dropout
+input_dropout: 0.2       # Input dropout
+
+# T5 relative positional encoding
+max_rel_pos: 64          # Maximum relative distance
+
+# Time-masking parameters (applied during training)
+num_masks: 20            # Number of masks per trial
+max_mask_fraction: 0.075 # Max fraction per mask (~53% total expected)
+
+# TCP-specific parameters
+use_tcp: true
+mono_layer: 1            # Layer index for monophone head (0-indexed, layer 2)
+diphone_layer: 2         # Layer index for diphone head (0-indexed, layer 3)
+use_gating: true         # Use learned gating (false = fixed weights)
+use_highway: true        # Enable gradient highway
+n_diphones: 1600         # 40 x 40 diphone classes
+
+

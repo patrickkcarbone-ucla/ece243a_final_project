@@ -1,0 +1,39 @@
+# @package _global_
+# TCP Transformer XXL - Curriculum (100 epochs)
+
+defaults:
+  - override /model: transformer/tcp_xxl
+  - override /trainer: tcp_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: transformer/tcp/quick_xxl/curriculum
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+nEpochs: 100
+lrDecayEpoch: 60
+lrDecayFactor: 0.1
+lrWarmupEpochs: 5
+
+optimizer:
+  lr: 0.001
+
+batchSize: 64
+maxGradNorm: 1.0
+
+useMixedPrecision: false
+
+model:
+  use_gating: true
+  use_highway: true
+
+alpha_mono: 0.3
+alpha_di: 0.4
+alpha_context: 0.3
+lambda_gate: 0.01
+
+diphoneRampEnd: 30
+
+diphone_vocab_path: data/diphone_vocab.pkl

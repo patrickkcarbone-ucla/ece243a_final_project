@@ -1,0 +1,41 @@
+# TCP Transformer XL - Extra Large capacity
+# ~25% more than tcp_larger, ~90% more than base
+# hidden_dim: 384 → 480 → 576 (+25% from larger)
+# num_layers: 5 → 6 → 7
+_target_: neural_decoder.models.tcp_transformer.TCPTransformer
+name: transformer/tcp_xl
+
+# Input/output dimensions
+neural_dim: 256 # 6v channels from dual-region dataset
+n_classes: 40 # Phoneme classes (+ blank added in model)
+
+# Transformer architecture (XL)
+hidden_dim: 576 # Up from 480 (+20%)
+num_layers: 7 # Up from 6 (+17%)
+num_heads: 8 # 576/8 = 72 per head
+ffn_dim: 2304 # 576 * 4
+
+# Patch embedding
+patch_len: 5 # 5 time bins = 100ms per patch
+patch_stride: 5 # Non-overlapping patches
+
+# Dropout rates
+dropout: 0.35 # FFN dropout
+attn_dropout: 0.1 # Attention dropout
+input_dropout: 0.2 # Input dropout
+
+# T5 relative positional encoding
+max_rel_pos: 64 # Maximum relative distance
+
+# Time-masking parameters (applied during training)
+num_masks: 20 # Number of masks per trial
+max_mask_fraction: 0.075 # Max fraction per mask (~53% total expected)
+
+# TCP-specific parameters
+use_tcp: true
+mono_layer: 2 # Layer index for monophone head (adjusted for 7 layers)
+diphone_layer: 4 # Layer index for diphone head (adjusted for 7 layers)
+use_gating: true # Use learned gating (false = fixed weights)
+use_highway: true # Enable gradient highway
+n_diphones: 1600 # 40 x 40 diphone classes
+

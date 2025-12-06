@@ -1,0 +1,98 @@
+# @package _global_
+# Standalone GMVAE Training (Phase 1)
+#
+# Train GMVAE independently to learn neural cluster structure.
+# After training, use these weights with TCP in Phase 2.
+#
+# Usage:
+#   python scripts/train_model.py experiment=gmvae/standalone
+#
+# Hyperparameters (user's specification):
+#   - alpha_rec: 1.0 (reconstruction weight)
+#   - alpha_kl: 5.0 (KL divergence weight)
+#   - alpha_cat: 0.0 (no categorical pressure)
+#   - alpha_sup: 0.0 (no phoneme supervision)
+#   - temp: 2.0 (soft cluster assignments)
+#   - epochs: 50
+
+defaults:
+  - override /model: gmvae/standalone
+  - override /trainer: gmvae_standalone
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+name: gmvae/standalone
+
+# ==============================================================================
+# Data
+# ==============================================================================
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP_balanced
+useDualRegion: true
+
+# ==============================================================================
+# Training Parameters
+# ==============================================================================
+nEpochs: 50
+batchSize: 64
+maxGradNorm: 1.0
+saveModelWeights: true
+
+# ==============================================================================
+# GMVAE Loss Weights (User's specification)
+# ==============================================================================
+alpha_gmvae_rec: 1.0         # Reconstruction weight
+alpha_gmvae_kl: 5.0          # KL divergence weight
+alpha_gmvae_cat: 0.0         # Categorical entropy (disabled)
+alpha_gmvae_sup: 0.0         # Supervised clustering (disabled)
+
+gmvae_rec_type: mse          # MSE reconstruction loss
+
+# Evaluation head learning rate
+eval_head_lr: 0.001
+
+# ==============================================================================
+# LR Schedule
+# ==============================================================================
+lr_schedule:
+  - name: warmup
+    start_epoch: 0
+    end_epoch: 3
+    function: linear
+    start_lr: 0.0001
+    end_lr: 0.001
+
+  - name: hold
+    start_epoch: 3
+    end_epoch: 20
+    function: constant
+    value: 0.001
+
+  - name: decay
+    start_epoch: 20
+    end_epoch: 50
+    function: cosine
+    start_lr: 0.001
+    end_lr: 0.0001
+
+# ==============================================================================
+# Loss Schedule (Temperature annealing handled by model)
+# ==============================================================================
+loss_schedule:
+  # Temperature: Start warm, anneal to cooler
+  gmvae_temp:
+    - name: warm
+      start_epoch: 0
+      end_epoch: 10
+      function: constant
+      value: 2.0
+    - name: anneal
+      start_epoch: 10
+      end_epoch: 40
+      function: linear
+      start_value: 2.0
+      end_value: 1.0
+    - name: stable
+      start_epoch: 40
+      end_epoch: 50
+      function: constant
+      value: 1.0

@@ -1,0 +1,12 @@
+# @package _global_
+# Tests: Area 44 only (channels 256-511: tx1 + spikePow from Broca's area)
+# RESULT: NO LEARNING - CER stuck at ~1.0, Area 44 is useless for speech
+defaults:
+  - override /model: gru/dual_region_44_only
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.02
+name: baseline_gru/channel_ablation_dual/44_only_lr02

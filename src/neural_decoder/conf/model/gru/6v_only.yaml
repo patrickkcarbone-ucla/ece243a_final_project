@@ -1,0 +1,14 @@
+# GRU using only Area 6v channels (first 128 of 256)
+# For single-region dataset
+_target_: neural_decoder.models.gru.GRUDecoder
+name: gru/6v_only
+neural_dim: 256
+n_classes: 40
+hidden_dim: 1024
+layer_dim: 5
+dropout: 0.4
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+use_channels: 6v_only
+

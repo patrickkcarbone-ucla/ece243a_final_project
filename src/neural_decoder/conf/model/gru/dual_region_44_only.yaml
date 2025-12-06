@@ -1,0 +1,14 @@
+# GRU for dual-region dataset using only Area 44 (channels 256-511)
+# WARNING: Area 44 has NO useful signal - CER stays at ~1.0
+_target_: neural_decoder.models.gru.GRUDecoder
+name: gru/dual_region_44_only
+neural_dim: 512
+n_classes: 40
+hidden_dim: 1024
+layer_dim: 5
+dropout: 0.4
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+use_channels: 44_only
+

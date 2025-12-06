@@ -1,0 +1,35 @@
+# @package _global_
+# Time-Masked Transformer baseline experiment (no TCP)
+defaults:
+  - override /model: transformer/base
+  - override /trainer: transformer_ctc
+  - override /augmentations: transformer_baseline
+  - override /optimizer: adamw
+
+# Experiment name (used for log directory)
+name: transformer/base
+
+# Dataset
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region_logSBP
+useDualRegion: true
+
+# Training schedule
+nEpochs: 250
+lrDecayEpoch: 150
+lrDecayFactor: 0.1
+lrDecayEpoch2: 210
+lrDecayFactor2: 0.1
+lrWarmupEpochs: 5
+
+# LR
+optimizer:
+  lr: 0.001
+
+# Batch size (larger batches help Transformer training)
+batchSize: 32
+
+# Gradient clipping
+maxGradNorm: 1.0
+
+# FP32 for stability
+useMixedPrecision: false

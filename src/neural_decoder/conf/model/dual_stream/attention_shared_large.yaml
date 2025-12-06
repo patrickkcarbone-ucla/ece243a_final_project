@@ -1,0 +1,15 @@
+# Dual-stream GRU with cross-attention fusion, shared day layers, larger hidden dim
+# NOTE: Underperforms single-stream 6v-only baseline
+_target_: neural_decoder.models.dual_gru.DualStreamGRUDecoder
+name: dual_stream/attention_shared_large
+neural_dim: 512
+n_classes: 40
+hidden_dim: 1536
+layer_dim: 5
+dropout: 0.4
+strideLen: 4
+kernelLen: 32
+gaussianSmoothWidth: 2.0
+fusion_strategy: attention
+day_layer_mode: shared
+

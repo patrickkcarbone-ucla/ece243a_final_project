@@ -1,0 +1,39 @@
+_target_: neural_decoder.models.transformer.TimeMaskedTransformer
+name: transformer/base
+
+# Input/output dimensions
+neural_dim: 256          # 6v channels from dual-region dataset
+n_classes: 40            # Phoneme classes (+ blank added in model)
+
+# Transformer architecture
+hidden_dim: 384          # Transformer hidden dimension
+num_layers: 5            # Number of Transformer blocks
+num_heads: 6             # Attention heads (head_dim = 384/6 = 64)
+ffn_dim: 1536            # Feed-forward dimension (4x hidden)
+
+# Patch embedding
+patch_len: 5             # 5 time bins = 100ms per patch
+patch_stride: 5          # Non-overlapping patches
+
+# Dropout rates
+dropout: 0.35            # FFN dropout
+attn_dropout: 0.1        # Attention dropout
+input_dropout: 0.2       # Input dropout
+
+# T5 relative positional encoding
+max_rel_pos: 64          # Maximum relative distance
+
+# Time-masking parameters (applied during training)
+num_masks: 20            # Number of masks per trial
+max_mask_fraction: 0.075 # Max fraction per mask (~53% total expected)
+
+# Part 2: Diphone auxiliary loss (disabled by default)
+use_diphone: false
+n_diphones: 1600         # Will be set from vocab if use_diphone=true
+
+# Part 2: Intermediate CTC loss (disabled by default)
+use_intermediate_ctc: false
+intermediate_layer: 2    # 0-indexed (layer 3 of 5)
+
+# NOTE: Unlike GRU, Transformer does NOT use day-specific layers (Feghhi et al. 2025)
+

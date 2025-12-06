@@ -1,0 +1,14 @@
+# @package _global_
+# 2048 hidden + mixup+adaptive combo ~1.2 SD
+defaults:
+  - override /model: gru/dual_region_6v_h2048
+  - override /augmentations: combo_sd12
+  - override /optimizer: adam
+
+datasetPath: dual_region_data/ptDecoder_ctc_dual_region
+useDualRegion: true
+nBatch: 10000
+lrStart: 0.02
+lrEnd: 0.01
+name: capacity_sweep/h2048_combo12
+

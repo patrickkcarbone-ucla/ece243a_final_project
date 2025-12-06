@@ -21,7 +21,7 @@ uv pip install -e .
 python scripts/build_diphone_vocab.py --dataset dual_region_data/ptDecoder_ctc_dual_region
 
 # Format datasets (run the notebook)
-notebooks/formatCompetitionResampledDualData.ipynb
+notebooks/formatCompetitionLogdDualData.ipynb
 ```
 
 ### Training Commands

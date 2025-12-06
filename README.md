@@ -1,6 +1,6 @@
 # Neural Speech Decoder - ECE143A/243A Final Project
 
-**Patrick Carbone and Azad Azeus**
+**Patrick Carbone and Azad Azargushasb**
 
 Brain-to-text decoding from intracortical neural signals using Transformer architectures with multi-level coarticulation modeling.
 
